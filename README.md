@@ -1,232 +1,106 @@
-# Store-Sales-Customer-Analytics-Using-SQL-DQLab-
-# DQLab Store Sales & Customer Analytics Using SQL
+# Store Sales & Customer Analytics Using SQL (DQLab)
 
 ## Project Overview
 
-This project analyzes DQLab Store transaction data from 2009 to 2012 using SQL. The analysis focuses on sales performance, promotional efficiency, and customer behavior to support data-driven business decisions.
+This project analyzes DQLab Store's sales, promotion efficiency, and customer performance from 2009 to 2012 using SQL.
 
-The project applies SQL techniques such as aggregation, filtering, grouping, subqueries, derived tables, and distinct counting to extract business insights from transactional data.
+The analysis focuses on identifying sales trends, evaluating promotion costs, and understanding customer activity to support data-driven business decisions.
 
 ## Business Objectives
 
-The analysis addresses the following business questions:
+The project aims to answer the following business questions:
 
 ### 1. Sales Performance Analysis
-- **Overall Performance by Year:** Calculate annual sales revenue and the number of completed orders from 2009 to 2012.
-- **Performance by Product Sub-Category:** Compare sales across product sub-categories in 2011 and 2012.
+- How did total sales and the number of orders change from 2009 to 2012?
+- Which product sub-categories experienced the highest sales in 2011 and 2012?
 
-### 2. Promotion Effectiveness and Efficiency
-- **Annual Promotion Analysis:** Calculate the annual promotion value and burn rate.
-- **Promotion Analysis by Product Sub-Category:** Evaluate promotion spending relative to sales for each product sub-category in 2012.
+### 2. Promotion Analysis
+- How did the promotion burn rate change from 2009 to 2012?
+- Which product sub-categories had the highest sales and promotion burn rates in 2012?
+- Did the annual promotion burn rate meet the company's target of 4.5%?
 
-### 3. Customer Analytics
-- **Annual Customer Analysis:** Identify the number of unique customers who completed transactions each year.
-- **New Customer Analysis:** Determine the number of new customers acquired each year.
-- **Customer Retention Analysis:** Analyze customer retention for the 2009 cohort.
+### 3. Customer Analysis
+- How many unique customers placed finished orders each year?
+- How many new customers were acquired each year?
+- How well did the 2009 customer cohort continue purchasing in subsequent years?
 
-## Dataset Description
+## Dataset
 
-The dataset contains approximately 5,500 raw transaction records covering the period from 2009 to 2012.
+The dataset used in this project is `dqlab_sales_store`, containing transaction records from 2009 to 2012.
 
-The original dataset includes three order statuses:
-- Order Finished
-- Order Returned
-- Order Cancelled
-
-The analysis uses the `dqlab_sales_store` table.
-
-### Data Dictionary
+The dataset includes the following information:
 
 | Column | Description |
 |---|---|
-| `order_id` | Unique or transaction-level order identifier |
-| `order_status` | Status of the order |
+| `order_id` | Unique order identifier |
+| `order_status` | Transaction status |
 | `customer` | Customer identifier or name |
-| `order_date` | Date of the transaction |
+| `order_date` | Transaction date |
 | `order_quantity` | Quantity of products ordered |
-| `sales` | Sales amount |
-| `discount` | Discount percentage or rate |
+| `sales` | Sales value |
+| `discount` | Discount information |
 | `discount_value` | Monetary value of the discount |
-| `product_category` | Main product category |
+| `product_category` | Product category |
 | `product_sub_category` | Product sub-category |
 
-## Tools and SQL Concepts
+Only transactions with the status `Order Finished` are included in the sales, promotion, and customer analyses unless otherwise specified.
 
-**Tools**
-- SQL
-- MySQL
-- DQLab learning environment
-- GitHub
+## Tools & Skills
 
-**SQL concepts**
-- `SELECT` and column aliases
-- `WHERE` and `BETWEEN`
+- **SQL**
+- Data aggregation and filtering
+- Date-based analysis
 - `GROUP BY` and `ORDER BY`
-- Aggregate functions: `SUM()` and `COUNT()`
-- `COUNT(DISTINCT ...)`
-- Date functions: `YEAR()`
-- Subqueries and derived tables
-- Calculated metrics using arithmetic expressions and `ROUND()`
+- Aggregate functions such as `SUM()` and `COUNT(DISTINCT)`
+- Subqueries
+- Business performance analysis
+- Data-driven recommendations
 
-## Analysis and Methodology
+## Repository Structure
 
-### 1. Sales Performance by Year
-
-**Objective:** Measure annual sales revenue and the number of completed orders.
-
-```sql
-SELECT
-    YEAR(order_date) AS years,
-    SUM(sales) AS sales,
-    COUNT(DISTINCT order_id) AS number_of_order
-FROM dqlab_sales_store
-WHERE order_status = 'Order Finished'
-    AND YEAR(order_date) BETWEEN 2009 AND 2012
-GROUP BY YEAR(order_date)
-ORDER BY years ASC;
+```text
+dqlab-store-sql-analysis/
+├── README.md
+└── sql/
+    ├── 01_sales_performance.sql
+    ├── 02_promotion_analysis.sql
+    └── 03_customer_analysis.sql
 ```
-
-**Key metrics:**
-- Total sales revenue
-- Number of distinct orders
-
-### 2. Sales Performance by Product Sub-Category
-
-**Objective:** Compare product sub-category sales between 2011 and 2012.
-
-```sql
-SELECT
-    YEAR(order_date) AS years,
-    product_sub_category,
-    SUM(sales) AS sales
-FROM dqlab_sales_store
-WHERE order_status = 'Order Finished'
-    AND YEAR(order_date) BETWEEN 2011 AND 2012
-GROUP BY
-    YEAR(order_date),
-    product_sub_category
-ORDER BY
-    years ASC,
-    sales DESC;
-```
-
-### 3. Promotion Effectiveness and Efficiency by Year
-
-**Objective:** Calculate the annual promotion value and burn rate using a derived table.
-
-**Burn Rate Formula:**
-
-Burn Rate (%) = (Total Promotion Value / Total Sales) × 100
-
-The target maximum burn rate is 4.5%.
-
-```sql
-SELECT
-    years,
-    sales,
-    promotion_value,
-    ROUND(
-        promotion_value / sales * 100,
-        2
-    ) AS burn_rate_percentage
-FROM (
-    SELECT
-        YEAR(order_date) AS years,
-        SUM(sales) AS sales,
-        SUM(discount_value) AS promotion_value
-    FROM dqlab_sales_store
-    WHERE order_status = 'Order Finished'
-        AND YEAR(order_date) BETWEEN 2009 AND 2012
-    GROUP BY YEAR(order_date)
-) AS promotion
-ORDER BY years ASC;
-```
-
-### 4. Promotion Analysis by Product Sub-Category
-
-**Objective:** Evaluate promotion spending relative to sales for each product sub-category in 2012.
-
-```sql
-SELECT
-    years,
-    product_sub_category,
-    product_category,
-    sales,
-    promotion_value,
-    ROUND(
-        promotion_value / sales * 100,
-        2
-    ) AS burn_rate_percentage
-FROM (
-    SELECT
-        YEAR(order_date) AS years,
-        product_sub_category,
-        product_category,
-        SUM(sales) AS sales,
-        SUM(discount_value) AS promotion_value
-    FROM dqlab_sales_store
-    WHERE order_status = 'Order Finished'
-        AND YEAR(order_date) = 2012
-    GROUP BY
-        YEAR(order_date),
-        product_sub_category,
-        product_category
-) AS promotion
-ORDER BY sales DESC;
-```
-
-### 5. Customer Transactions per Year
-
-**Objective:** Calculate the number of unique customers who completed transactions each year.
-
-```sql
-SELECT
-    YEAR(order_date) AS years,
-    COUNT(DISTINCT customer) AS number_of_customer
-FROM dqlab_sales_store
-WHERE order_status = 'Order Finished'
-    AND YEAR(order_date) BETWEEN 2009 AND 2012
-GROUP BY YEAR(order_date)
-ORDER BY years ASC;
-```
-
-### 6. New Customer Analysis
-
-**Objective:** Identify customers making their first completed transaction in each year.
-
-*Status: Planned — SQL query and results to be added.*
-
-### 7. Customer Retention Analysis
-
-**Objective:** Analyze the retention of customers whose first completed transaction occurred in 2009.
-
-*Status: Planned — cohort definition, SQL query, and retention results to be added.*
 
 ## Key Findings
 
-Based on the annual sales and promotion analysis:
+### 1. Sales Performance
 
-- **2012 recorded the highest annual sales** among the four years, reaching 4,482,983,158.
-- **2011 had the highest annual promotion burn rate**, at 5.22%.
-- The annual burn rate exceeded the 4.5% target in every year from 2009 to 2012.
-- **Office Machines** was the highest-selling product sub-category in 2012, with sales of 811,427,140.
-- The annual number of unique customers ranged from 581 to 594.
+- Total sales fluctuated throughout 2009–2012.
+- Sales declined in 2010 and gradually recovered in 2011 and 2012.
+- The number of finished orders was highest in 2012.
 
-These findings indicate that promotion spending relative to sales exceeded the target and may require further evaluation by year and product sub-category.
+### 2. Promotion Efficiency
+
+- The annual promotion burn rate exceeded the 4.5% target in every year from 2009 to 2012.
+- The highest annual burn rate occurred in 2011, at 5.22%.
+- In 2012, Binders and Binder Accessories recorded a burn rate of 6.14%, while Office Machines recorded 5.75%.
+
+### 3. Customer Performance
+
+- The number of unique customers with finished orders remained relatively stable throughout the four-year period.
+- The highest annual customer count was recorded in 2012, with 594 unique customers.
+
+*Note: New customer acquisition and cohort retention analyses are not yet included in the current SQL files.*
 
 ## Recommendations
 
-- Review promotional spending for years and product sub-categories with burn rates above 4.5%.
-- Evaluate whether promotional spending generates sufficient incremental sales.
-- Compare sales and promotion performance across product categories before reallocating the promotion budget.
-- Complete the new customer and cohort retention analyses to better understand customer acquisition and loyalty.
+Based on the current analysis:
 
-## Data Source
-
-DQLab learning project — Store Sales and Customer Analytics.
-
-The dataset is accessed through the DQLab learning environment. The raw dataset is not included in this repository.
+- **Sales performance:** Investigate product sub-categories with declining sales and identify opportunities to improve revenue.
+- **Promotion efficiency:** Review promotion strategies for product sub-categories with burn rates above the 4.5% target.
+- **Customer growth:** Explore customer acquisition and retention strategies to increase repeat purchases.
+- **Further analysis:** Complete new customer and cohort retention analyses to gain deeper insights into customer behavior.
 
 ## Author
 
-Created as a SQL portfolio project to demonstrate data querying, business metric calculation, and analytical problem-solving skills.
+**Afrah Hafidzah**
+
+Statistics Student | Aspiring Data Analyst
+
+This project was developed as part of a SQL-based data analytics learning portfolio.
